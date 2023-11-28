@@ -1,0 +1,32 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Telemetry Interface</title>
+  </head>
+  <body>
+    <script>
+      const socket = new WebSocket("ws://localhost:12345"); // Usando WebSocket para comunicação bidirecional
+
+      socket.onopen = (event) => {
+        console.log("Conexão estabelecida");
+      };
+
+      socket.onmessage = (event) => {
+        const telemetryData = event.data;
+        console.log(telemetryData);
+        // Aqui você pode manipular os dados e atualizar a interface do usuário conforme necessário
+      };
+
+      socket.onclose = (event) => {
+        console.log("Conexão encerrada");
+      };
+
+      // Exemplo de envio de dados para o servidor
+      const telemetryData = "Dados da Telemetria aqui";
+      socket.send(telemetryData);
+    </script>
+  </body>
+</html>
