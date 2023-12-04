@@ -1,32 +1,46 @@
-<!-- index.html -->
 <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Telemetry Interface</title>
+    <title>Socket Communication</title>
   </head>
   <body>
-    <script>
-      const socket = new WebSocket("ws://localhost:12345"); // Usando WebSocket para comunicação bidirecional
+    <!-- text wrap -->
+    <div id="message" style="text-wrap: wrap"></div>
 
+    <script>
+      function strdecode(data) {
+        return JSON.stringify(decodeURIComponent(escape(data)));
+      }
+      // Criação de um objeto WebSocket
+      const socket = new WebSocket("ws://localhost:8765");
+
+      // Configuração de manipuladores de eventos
       socket.onopen = (event) => {
-        console.log("Conexão estabelecida");
+        console.log("Conectado ao servidor");
+        // Envia uma mensagem para o servidor
+        socket.send(JSON.stringify("pila"));
       };
 
+      /* socket.onmessage = (event) => {
+        console.log("event: ", event);
+        console.log("Mensagem recebida: ", event.data);
+        document.getElementById("message").innerText = event.data;
+      };*/
       socket.onmessage = (event) => {
-        const telemetryData = event.data;
-        console.log(telemetryData);
-        // Aqui você pode manipular os dados e atualizar a interface do usuário conforme necessário
+        console.log("Mensagem recebida: ", strdecode(event.data));
+        const decodedMessage = decodeURIComponent(escape(event.data));
+        document.getElementById("message").innerText += decodedMessage;
+      };
+
+      socket.onerror = (event) => {
+        console.log("Erro: ", event);
       };
 
       socket.onclose = (event) => {
-        console.log("Conexão encerrada");
+        console.log("Conexão fechada");
       };
-
-      // Exemplo de envio de dados para o servidor
-      const telemetryData = "Dados da Telemetria aqui";
-      socket.send(telemetryData);
     </script>
   </body>
 </html>

@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WebSocket Real-Time Chart</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  </head>
+  <body>
+    <canvas id="realTimeChart" width="800" height="400"></canvas>
+
+    <script>
+      // Configurar o WebSocket
+      const socket = new WebSocket("ws://localhost:8765");
+
+      // Configurar o gráfico
+      const ctx = document.getElementById("realTimeChart").getContext("2d");
+      const realTimeChart = new Chart(ctx, {
+        type: "line",
+        data: {
+          labels: [],
+          datasets: [
+            {
+              label: "Número",
+              data: [],
+              borderColor: "rgb(75, 192, 192)",
+              borderWidth: 2,
+              fill: false,
+            },
+          ],
+        },
+        options: {
+          scales: {
+            x: {
+              type: "linear",
+              position: "bottom",
+            },
+            y: {
+              type: "linear",
+              position: "left",
+            },
+          },
+        },
+      });
+
+      // Função chamada sempre que uma nova mensagem é recebida do WebSocket
+      let dadosParaEnviar = "";
+      let parts = [];
+      let buffer = "";
+      let allData = [];
+      socket.onmessage = function (event) {
+        //const data = JSON.parse(event.data);
+
+        console.log("event: ", event.data);
+
+        let message = event.data;
+        buffer += message;
+
+        console.log("buffer", buffer);
+        while (buffer.includes("\n")) {
+          parts = buffer.split("\n");
+          dadosParaEnviar += parts[0];
+          buffer = parts.slice(1).join("\n");
+        }
+        message = dadosParaEnviar;
+        allData.push(message);
+
+        console.log("MENSAGEM COMPLETA", message);
+        dadosParaEnviar = "";
+        //id,idExperiencia,nome,descricao,Tick,ax_raw,ay_raw,
+        //az_raw,ax_cook,ay_cook,az_cook,euler_x,euler_y,euler_z,alt_raw,
+        //alt_cook,latitude,longitude,drogue,main,state,avg_acc,Delta,idData_id
+
+        const data = message.split(",");
+        let ticks = data[4];
+        let ax = data[5];
+        let ay = data[6];
+        let az = data[7];
+        let euler_x = data[8];
+        let euler_y = data[9];
+        let euler_z = data[10];
+        let alt = data[11];
+        let lat = data[12];
+        let long = data[13];
+        let drogue = data[14];
+        console.log(data);
+        // to parse data i have to wait to \n
+
+        const x_val = ticks; // Substitua pelo seu campo de timestamp, se aplicável
+        const y_val = ax; // Substitua pelo seu campo de número
+
+        // Adicionar novos pontos ao gráfico
+        realTimeChart.data.labels.push(x_val);
+        realTimeChart.data.datasets[0].data.push(y_val);
+
+        // Limitar o número de pontos no gráfico para manter uma janela móvel
+        const maxDataPoints = 10000;
+        if (realTimeChart.data.labels.length > maxDataPoints) {
+          realTimeChart.data.labels.shift();
+          realTimeChart.data.datasets[0].data.shift();
+        }
+
+        // Atualizar o gráfico
+        realTimeChart.update();
+      };
+    </script>
+  </body>
+</html>
