@@ -3,6 +3,10 @@
 TODO: REQUIREMENTS
 
 ```bash
+git clone https://github.com/NAVEE-UART/GroundStation.git -b dataSending
+```
+
+```bash
 python3 -m venv env
 source ./env/bin/activate
 pip install -r requirements.txt # if exists
